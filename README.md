@@ -4,14 +4,249 @@ A professional, feature-rich notes management application built with React and V
 
 ![Note Vault](public/notevault-logo.png)
 
+---
+
+## 📖 Project Overview
+
+**Note Vault** is a modern, secure notes management application that allows users to create, organize, and manage notes with file attachments. Built with React 18 and Vite, it showcases professional-grade frontend development with clean component architecture, efficient state management, and a polished user interface featuring a dark charcoal blue gradient theme with gray-tan accents.
+
+---
+
+## 🚀 How to Run
+
+### Prerequisites
+
+- **Node.js**: v16 or higher
+- **npm**: v7 or higher (comes with Node.js)
+
+### Installation & Setup
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+```
+
+The application will be available at `http://localhost:5173`
+
+### Build for Production
+
+```bash
+# Create optimized production build
+npm run build
+
+# Preview production build locally
+npm run preview
+```
+
+---
+
+## 🏗️ Component Breakdown
+
+### Core Components
+
+**1. App.jsx** - Root component and state container
+
+- Manages global application state (`notes`, `loading`)
+- Handles note creation and deletion logic
+- Orchestrates component rendering based on loading state
+- Implements 1.5s loading simulation on startup
+
+**2. NoteForm.jsx** - Note creation form
+
+- Controlled form inputs for title and description
+- Multi-file upload support (up to 5 files, 5MB each)
+- Real-time image preview before upload
+- Inline validation with error messages
+- File type support: Images, PDF, DOC, DOCX, TXT
+
+**3. NoteList.jsx** - Scrollable notes container
+
+- Fixed-height container (600px) with custom scrollbar
+- Conditional rendering: shows notes or empty state
+- Sticky header with note count
+- Smooth scrolling with themed scrollbar
+
+**4. NoteItem.jsx** - Individual note card with modal
+
+- Gradient header matching main app header
+- Files displayed on left (200px column)
+- Description on right with "Read More" functionality
+- Modal popup for full content view
+- Click-to-open images in new tab
+- Download buttons for file attachments
+
+**5. EmptyState.jsx** - Empty state component
+
+- Displays when no notes exist
+- Friendly message with icon
+- Encourages user to create first note
+
+**6. Loader.jsx** - Loading spinner
+
+- Animated spinner with message
+- Shows during initial 1.5s app load
+- Smooth fade-in/out transitions
+
+---
+
+## 🔄 State Explanation
+
+### State Architecture
+
+**Global State (App.jsx):**
+
+```javascript
+const [notes, setNotes] = useState([]);
+const [loading, setLoading] = useState(true);
+```
+
+- **`notes`**: Array of note objects (single source of truth)
+- **`loading`**: Boolean controlling loading state display
+
+**Local State (NoteForm.jsx):**
+
+```javascript
+const [title, setTitle] = useState("");
+const [description, setDescription] = useState("");
+const [attachedFiles, setAttachedFiles] = useState([]);
+const [formError, setFormError] = useState("");
+```
+
+- **`title`**: Controlled input for note title (required)
+- **`description`**: Controlled textarea for note description (optional)
+- **`attachedFiles`**: Array of File objects for attachments
+- **`formError`**: Validation error message
+
+**Local State (NoteItem.jsx):**
+
+```javascript
+const [showModal, setShowModal] = useState(false);
+```
+
+- **`showModal`**: Boolean controlling modal visibility per note
+
+### Data Flow
+
+```
+User Input (NoteForm)
+        ↓
+Form State Update (useState)
+        ↓
+onAddNote Callback
+        ↓
+App State Update (setNotes)
+        ↓
+Props to NoteList
+        ↓
+Props to NoteItem[]
+        ↓
+UI Re-render
+```
+
+**Key Principles:**
+
+- **Unidirectional Data Flow**: State flows down via props, events flow up via callbacks
+- **Immutable Updates**: Using spread operators for state updates
+- **Single Source of Truth**: All notes stored in App component
+- **Component-Level State**: Modal and form state kept local to components
+
+### Note Object Structure
+
+```javascript
+{
+  id: 1736445123456,              // Timestamp-based unique ID
+  title: "My Note",               // Required string
+  description: "Long text...",    // Optional string
+  files: [                        // Optional array
+    {
+      name: "image.png",
+      type: "image/png",
+      size: 45678,
+      data: "data:image/png;base64,..."
+    }
+  ],
+  createdAt: "2026-01-09T18:05:23.456Z"  // ISO timestamp
+}
+```
+
+---
+
+## 🎯 Assumptions/Limitations
+
+### Design Decisions & Trade-offs
+
+**1. Client-Side Only Storage**
+
+- **Assumption**: Notes are stored in component state only
+- **Trade-off**: Data is lost on page refresh
+- **Rationale**: Focuses on frontend architecture without backend complexity
+- **Future Enhancement**: Could add localStorage or backend API
+
+**2. No Edit Functionality**
+
+- **Assumption**: Users can only create and delete notes
+- **Trade-off**: Cannot modify existing notes
+- **Rationale**: Simplifies state management and UI complexity
+- **Future Enhancement**: Add edit mode with inline editing
+
+**3. File Size Limit (5MB per file)**
+
+- **Assumption**: Users won't need to attach large files
+- **Trade-off**: Cannot attach videos or large documents
+- **Rationale**: Prevents memory issues with base64 encoding
+- **Alternative**: Could use File API with object URLs
+
+**4. Maximum 5 Files per Note**
+
+- **Assumption**: 5 files sufficient for most use cases
+- **Trade-off**: Cannot attach unlimited files
+- **Rationale**: Maintains clean UI and prevents performance issues
+
+**5. No Search/Filter Functionality**
+
+- **Assumption**: Users will have manageable number of notes
+- **Trade-off**: Difficult to find specific notes with many entries
+- **Rationale**: Keeps initial implementation focused
+- **Future Enhancement**: Add search bar and filter options
+
+**6. Single User Application**
+
+- **Assumption**: One user per browser session
+- **Trade-off**: No multi-user support or authentication
+- **Rationale**: Simplifies architecture for frontend-only app
+
+**7. Vanilla CSS (No Framework)**
+
+- **Assumption**: Custom styling provides better learning experience
+- **Trade-off**: More CSS code to maintain
+- **Rationale**: Demonstrates CSS skills and avoids framework dependencies
+
+**8. Image Storage as Base64**
+
+- **Assumption**: Images converted to base64 strings
+- **Trade-off**: Larger memory footprint than blob URLs
+- **Rationale**: Simpler to implement and persist (if adding localStorage)
+
+### Technical Constraints
+
+- **Browser Compatibility**: Modern browsers only (ES6+)
+- **Performance**: Best with < 100 notes due to in-memory storage
+- **Accessibility**: Keyboard navigation supported, screen reader friendly
+- **Responsive**: Optimized for desktop and mobile (768px breakpoint)
+
+---
+
 ## 🌟 Features
 
 ### Core Functionality
 
-- ✅ **Create Notes** - Add notes with title, description, and multiple file attachments
-- ✅ **Delete Notes** - Remove notes with a single click
-- ✅ **File Attachments** - Support for images, PDFs, and documents (up to 5 files, 5MB each)
-- ✅ **Expandable View** - Modal popup for viewing full note content
+- ✅ **Create Notes** - Title, description, and multiple file attachments
+- ✅ **Delete Notes** - One-click deletion with red ✕ button
+- ✅ **File Attachments** - Images, PDFs, and documents (up to 5 files, 5MB each)
+- ✅ **Expandable View** - Modal popup for full note content
 - ✅ **Image Viewer** - Click images to open in new browser tab
 - ✅ **Download Files** - Download attached documents directly
 
@@ -26,70 +261,39 @@ A professional, feature-rich notes management application built with React and V
 - 📜 **Scrollable Container** - 600px max height with custom scrollbar
 - 🔍 **Read More Modal** - Expandable popup for long descriptions
 
-### Technical Highlights
-
-- 🏗️ **Clean Architecture** - Component separation with single responsibility
-- 🔄 **State Management** - Single source of truth using React hooks
-- 🎭 **Smooth Animations** - Fade-in, slide-up, and hover effects
-- ♿ **Accessible** - Keyboard navigation and ARIA attributes
-- 🎨 **Custom Scrollbars** - Themed scrollbars matching app design
-
-## 🚀 Quick Start
-
-### Prerequisites
-
-- Node.js (v16 or higher)
-- npm or yarn
-
-### Installation
-
-```bash
-# Clone the repository
-git clone <your-repo-url>
-
-# Navigate to project directory
-cd task_manager
-
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-```
-
-The app will be available at `http://localhost:5173`
-
-### Build for Production
-
-```bash
-# Create production build
-npm run build
-
-# Preview production build
-npm run preview
-```
+---
 
 ## 📁 Project Structure
 
 ```
 task_manager/
 ├── public/
-│   ├── logo.png                  # Favicon
-│   └── notevault-logo.png        # Header logo
+│   ├── logo.png                  # Favicon (safe icon)
+│   └── notevault-logo.png        # Header logo with text
 ├── src/
 │   ├── components/
-│   │   ├── Loader.jsx/css        # Loading spinner
-│   │   ├── NoteForm.jsx/css      # Note creation form
-│   │   ├── NoteList.jsx/css      # Scrollable notes container
-│   │   ├── NoteItem.jsx/css      # Note card with modal
-│   │   └── EmptyState.jsx/css    # Empty state component
-│   ├── App.jsx/css               # Root component
+│   │   ├── Loader.jsx            # Loading spinner component
+│   │   ├── Loader.css            # Loader styles
+│   │   ├── NoteForm.jsx          # Note creation form
+│   │   ├── NoteForm.css          # Form styles
+│   │   ├── NoteList.jsx          # Scrollable notes container
+│   │   ├── NoteList.css          # List container styles
+│   │   ├── NoteItem.jsx          # Note card with modal
+│   │   ├── NoteItem.css          # Card and modal styles
+│   │   ├── EmptyState.jsx        # Empty state component
+│   │   └── EmptyState.css        # Empty state styles
+│   ├── App.jsx                   # Root component
+│   ├── App.css                   # App layout styles
 │   ├── index.css                 # Global styles & theme
 │   └── main.jsx                  # Entry point
-├── index.html
-├── package.json
-└── vite.config.js
+├── index.html                    # HTML template
+├── package.json                  # Dependencies & scripts
+├── vite.config.js                # Vite configuration
+├── .gitignore                    # Git ignore rules
+└── README.md                     # This file
 ```
+
+---
 
 ## 🎨 Design System
 
@@ -97,150 +301,56 @@ task_manager/
 
 **Primary Colors:**
 
-- Dark Charcoal Blue: `#1e3a5f`
-- Blue Hover: `#2c5282`
-- Dark Blue: `#0f1f38`
+```css
+--primary-color: #1e3a5f; /* Dark Charcoal Blue */
+--primary-hover: #2c5282; /* Blue Hover */
+--primary-dark: #0f1f38; /* Dark Blue */
+```
 
 **Accent Colors:**
 
-- Tan: `#b8a88a`
-- Light Tan: `#d4c4a8`
-- Gray: `#6b7280`
+```css
+--accent-tan: #b8a88a; /* Tan */
+--accent-tan-light: #d4c4a8; /* Light Tan */
+--text-muted: #6b7280; /* Gray */
+```
 
 **Background:**
 
-- Primary: `#f5f3ef`
-- Card: `#ffffff`
-- Secondary: `#e8e4dc`
-
-### Typography
-
-- **Headers:** 1.25-2rem, weight 600-700
-- **Body:** 0.9-1rem, line-height 1.5-1.7
-- **Small Text:** 0.75-0.875rem
-
-## 💡 Usage Guide
-
-### Creating a Note
-
-1. Enter a **title** (required)
-2. Add a **description** (optional)
-3. Attach **files** by clicking the file input (optional)
-   - Supports: Images, PDF, DOC, DOCX, TXT
-   - Max 5 files, 5MB each
-4. Click **Add Note**
-
-### Viewing Notes
-
-- **Scroll** through the notes container
-- **Click images** to open in new tab
-- **Click "...Read More"** to open full content in modal
-- **Download files** using the download button
-
-### Deleting Notes
-
-- Click the **red ✕ button** in the card header
-
-## 🏗️ Architecture
-
-### Component Hierarchy
-
-```
-App (State Container)
-  ↓
-  ├─ Loader (Conditional)
-  ├─ NoteForm (Controlled Component)
-  └─ NoteList (Presentation)
-       ├─ EmptyState (Conditional)
-       └─ NoteItem[] (With Modal State)
+```css
+--bg-primary: #f5f3ef; /* Light Beige */
+--bg-card: #ffffff; /* White */
+--bg-secondary: #e8e4dc; /* Light Gray */
 ```
 
-### State Management
+**Utility:**
 
-**Global State (App.jsx):**
+```css
+--danger-color: #dc2626; /* Red for delete */
+--border-color: #d1d5db; /* Light Gray Border */
+```
 
-- `notes` - Array of note objects
-- `loading` - Boolean for loading state
-
-**Local State (NoteForm.jsx):**
-
-- `title`, `description` - Form inputs
-- `attachedFiles` - File attachments
-- `formError` - Validation errors
-
-**Local State (NoteItem.jsx):**
-
-- `showModal` - Modal visibility
-
-### Data Flow
-
-1. **Unidirectional** - State flows down via props
-2. **Event Callbacks** - Actions flow up via callbacks
-3. **Immutable Updates** - Using spread operators
-4. **Single Source of Truth** - All notes in App state
-
-## 🎯 Key Features Explained
-
-### 1. Modal Popup System
-
-Click "...Read More" to open an expandable modal:
-
-- Full-screen overlay with backdrop
-- Scrollable content area
-- All attachments in grid layout
-- Click outside or ✕ to close
-- Smooth animations
-
-### 2. File Management
-
-**Upload:**
-
-- Drag & drop or click to select
-- Multiple files supported
-- Preview images before upload
-- Remove files before submitting
-
-**Display:**
-
-- Images on left (200px column)
-- Description on right
-- Download buttons for documents
-
-### 3. Scrollable Container
-
-- Fixed 600px height (500px mobile)
-- Custom scrollbar matching theme
-- Sticky "Your Notes" header
-- Smooth scrolling
-
-### 4. Card Design
-
-**Header:**
-
-- Gradient background (matches main header)
-- White title text
-- Red delete button with ✕
-
-**Body:**
-
-- Files/images on left
-- Description on right
-- Timestamp at bottom
+---
 
 ## 🔧 Technologies Used
 
-- **React 18** - UI library
+- **React 18** - UI library with hooks
 - **Vite** - Build tool and dev server
-- **Vanilla CSS** - Styling (no frameworks)
-- **JavaScript (ES6+)** - Programming language
+- **Vanilla CSS** - Custom styling (no frameworks)
+- **JavaScript (ES6+)** - Modern JavaScript features
+
+---
 
 ## 📊 Performance
 
-- **Initial Load:** < 2 seconds (including loader)
+- **Initial Load:** < 2 seconds (including 1.5s loader)
 - **Add Note:** Instant
 - **Delete Note:** Instant
 - **Modal Open:** < 0.3s (animated)
 - **File Upload:** Real-time preview
+- **Scrolling:** Smooth 60fps
+
+---
 
 ## ♿ Accessibility
 
@@ -248,8 +358,10 @@ Click "...Read More" to open an expandable modal:
 - ✅ ARIA labels and attributes
 - ✅ Keyboard navigation support
 - ✅ Focus-visible states
-- ✅ Readable color contrast
+- ✅ Readable color contrast (WCAG AA)
 - ✅ Screen reader friendly
+
+---
 
 ## 📱 Responsive Design
 
@@ -257,7 +369,7 @@ Click "...Read More" to open an expandable modal:
 
 **Desktop (>768px):**
 
-- Files in left column
+- Files in left column (200px)
 - Description in right column
 - Horizontal layout
 
@@ -266,15 +378,9 @@ Click "...Read More" to open an expandable modal:
 - Stacked vertical layout
 - Full-width components
 - Touch-friendly buttons
+- Optimized spacing
 
-## 🐛 Known Limitations
-
-- Notes are stored in component state only (not persisted)
-- No backend/API integration
-- No edit functionality (only add/delete)
-- No search or filter features
-- No categories or tags
-- Single user only
+---
 
 ## 🚧 Future Enhancements
 
@@ -286,14 +392,25 @@ Click "...Read More" to open an expandable modal:
 - [ ] Dark mode toggle
 - [ ] Keyboard shortcuts
 - [ ] Drag & drop reordering
+- [ ] Backend API integration
+- [ ] User authentication
+
+---
 
 ## 📄 License
 
 This project is open source and available under the MIT License.
 
+---
+
 ## 👨‍💻 Author
 
 Built with ❤️ using React and Vite
+
+**GitHub:** [Anubhav3024](https://github.com/Anubhav3024)  
+**Repository:** [NoteVault](https://github.com/Anubhav3024/NoteVault)
+
+---
 
 ## 🙏 Acknowledgments
 
