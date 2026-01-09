@@ -94,64 +94,191 @@ npm run preview
 
 ## 🔄 State Explanation
 
-### State Architecture
+### Pillar 2: Flawless State Management ✅
 
-**Global State (App.jsx):**
+Our application demonstrates **flawless state management** following React's core principles:
 
-```javascript
-const [notes, setNotes] = useState([]);
-const [loading, setLoading] = useState(true);
-```
+#### ✅ Rule 1: Hooks Only
 
-- **`notes`**: Array of note objects (single source of truth)
-- **`loading`**: Boolean controlling loading state display
+**Requirement:** Use `useState` (mandatory) and `useEffect` (for loader simulation)
 
-**Local State (NoteForm.jsx):**
+**Implementation:**
 
 ```javascript
-const [title, setTitle] = useState("");
-const [description, setDescription] = useState("");
-const [attachedFiles, setAttachedFiles] = useState([]);
-const [formError, setFormError] = useState("");
+// App.jsx - Global State
+const [notes, setNotes] = useState([]); // ✅ useState for notes array
+const [loading, setLoading] = useState(true); // ✅ useState for loading state
+
+useEffect(() => {
+  // ✅ useEffect for loader
+  const timer = setTimeout(() => {
+    setLoading(false);
+  }, 1500);
+  return () => clearTimeout(timer);
+}, []);
 ```
 
-- **`title`**: Controlled input for note title (required)
-- **`description`**: Controlled textarea for note description (optional)
-- **`attachedFiles`**: Array of File objects for attachments
-- **`formError`**: Validation error message
+**✅ No external libraries used** - Pure React hooks only
 
-**Local State (NoteItem.jsx):**
+---
+
+#### ✅ Rule 2: No External Libraries
+
+**Requirement:** Do not use Redux, Context API, Zustand, etc.
+
+**Implementation:**
+
+- ❌ No Redux
+- ❌ No Context API
+- ❌ No Zustand
+- ❌ No MobX
+- ✅ **Only React's built-in `useState` and `useEffect`**
+
+---
+
+#### ✅ Rule 3: Lift State Properly
+
+**Requirement:** State should live in the lowest common ancestor. Avoid duplicating state across components.
+
+**Implementation:**
+
+```
+Component Hierarchy:
+<App />                          ← [state] notes, loading
+ ├─ <Loader />                   ← (no state)
+ ├─ <NoteForm />                 ← [local state] title, description, files
+ └─ <NoteList />                 ← (no state, receives props)
+      └─ <NoteItem />            ← [local state] showModal
+```
+
+**State Placement Rationale:**
+
+1. **`notes` in App** ✅
+
+   - Lowest common ancestor of NoteForm and NoteList
+   - Both components need access to notes data
+   - Single source of truth
+
+2. **`loading` in App** ✅
+
+   - Controls entire app rendering (Loader vs Content)
+   - Top-level state for top-level UI decision
+
+3. **`title`, `description`, `files` in NoteForm** ✅
+
+   - Only NoteForm needs these values
+   - Controlled inputs local to form
+   - No other component needs this data
+
+4. **`showModal` in NoteItem** ✅
+   - Each note has independent modal state
+   - No sharing needed between notes
+   - Keeps modal logic encapsulated
+
+**✅ No duplicated state** - Each piece of state exists in exactly one place
+
+---
+
+### State Architecture Diagram
+
+```
+┌─────────────────────────────────────────┐
+│           <App />                       │
+│                                         │
+│  [state]                                │
+│  • notes: Note[]                        │
+│  • loading: boolean                     │
+│                                         │
+│  [functions]                            │
+│  • addNote(note) → updates notes        │
+│  • deleteNote(id) → updates notes       │
+└─────────────────────────────────────────┘
+           │                    │
+           ↓                    ↓
+    ┌─────────────┐      ┌─────────────┐
+    │ <NoteForm/> │      │ <NoteList/> │
+    │             │      │             │
+    │ [props]     │      │ • onAddNote │
+    │             │      │ • notes     │
+    │ [state]     │      │ • onDelete  │
+    │ • title     │      └─────────────┘
+    │ • desc      │             │
+    │ • files     │             ↓
+    └─────────────┘      ┌─────────────┐
+                         │ <NoteItem/> │
+                         │             │
+                         │ [props]     │
+                         │ • note      │
+                         │ • onDelete  │
+                         │             │
+                         │ [state]     │
+                         │ • showModal │
+                         └─────────────┘
+```
+
+---
+
+### Data Flow (Unidirectional)
+
+**Adding a Note:**
+
+```
+1. User types in NoteForm
+   ↓
+2. Local state updates (title, description, files)
+   ↓
+3. User clicks "Add Note"
+   ↓
+4. onAddNote callback fires
+   ↓
+5. App.addNote() executes
+   ↓
+6. setNotes() updates global state
+   ↓
+7. React re-renders NoteList
+   ↓
+8. New note appears in UI
+```
+
+**Deleting a Note:**
+
+```
+1. User clicks delete button in NoteItem
+   ↓
+2. onDelete callback fires with note ID
+   ↓
+3. App.deleteNote(id) executes
+   ↓
+4. setNotes() filters out deleted note
+   ↓
+5. React re-renders NoteList
+   ↓
+6. Note disappears from UI
+```
+
+---
+
+### State Update Patterns
+
+**✅ Immutable Updates:**
 
 ```javascript
-const [showModal, setShowModal] = useState(false);
+// Adding a note (spread operator)
+setNotes((prevNotes) => [...prevNotes, newNote]);
+
+// Deleting a note (filter creates new array)
+setNotes((prevNotes) => prevNotes.filter((note) => note.id !== id));
 ```
 
-- **`showModal`**: Boolean controlling modal visibility per note
+**✅ Functional Updates:**
 
-### Data Flow
-
-```
-User Input (NoteForm)
-        ↓
-Form State Update (useState)
-        ↓
-onAddNote Callback
-        ↓
-App State Update (setNotes)
-        ↓
-Props to NoteList
-        ↓
-Props to NoteItem[]
-        ↓
-UI Re-render
+```javascript
+// Using previous state for accuracy
+setNotes((prevNotes) => [...prevNotes, newNote]);
+// NOT: setNotes([...notes, newNote])  ← Avoid this
 ```
 
-**Key Principles:**
-
-- **Unidirectional Data Flow**: State flows down via props, events flow up via callbacks
-- **Immutable Updates**: Using spread operators for state updates
-- **Single Source of Truth**: All notes stored in App component
-- **Component-Level State**: Modal and form state kept local to components
+---
 
 ### Note Object Structure
 
@@ -171,6 +298,36 @@ UI Re-render
   createdAt: "2026-01-09T18:05:23.456Z"  // ISO timestamp
 }
 ```
+
+---
+
+### Why This Approach Works
+
+**✅ Single Source of Truth**
+
+- `notes` array exists only in App
+- All components read from same source
+- No sync issues
+
+**✅ Predictable Updates**
+
+- State flows down (props)
+- Events flow up (callbacks)
+- Easy to debug and trace
+
+**✅ Component Independence**
+
+- NoteForm doesn't know about NoteList
+- NoteItem doesn't know about other notes
+- Loose coupling, high cohesion
+
+**✅ Scalability**
+
+- Easy to add new features
+- Clear where to add state
+- Follows React best practices
+
+---
 
 ---
 
