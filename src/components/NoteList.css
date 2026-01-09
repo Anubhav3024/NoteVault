@@ -1,0 +1,61 @@
+.note-list-container {
+  background-color: var(--bg-card);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-md);
+  border: 2px solid var(--accent-tan-light);
+}
+
+.note-list-container h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+  position: sticky;
+  top: 0;
+  background-color: var(--bg-card);
+  padding-bottom: 0.5rem;
+  z-index: 10;
+}
+
+.note-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: 600px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+/* Custom Scrollbar Styling */
+.note-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.note-list::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: 4px;
+}
+
+.note-list::-webkit-scrollbar-thumb {
+  background: var(--accent-tan);
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.note-list::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-color);
+}
+
+/* Firefox Scrollbar */
+.note-list {
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-tan) var(--bg-secondary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .note-list {
+    max-height: 500px;
+  }
+}
